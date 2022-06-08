@@ -8,6 +8,9 @@
 
 int main(int argc, char* argv[]) {
 	
+	
+	char* directory;
+
 	int p1[2];
 	if (pipe(p1) == -1) {
 		return 1;
@@ -18,6 +21,7 @@ int main(int argc, char* argv[]) {
 	}
 	if (pid == 0) {
 		//child
+		strcpy(directory, "ls d2");
 		int x;
 		if (read(p1[0], &x, sizeof(x)) == -1) { //read data from parent process
 			return 3; 
@@ -25,12 +29,13 @@ int main(int argc, char* argv[]) {
 		printf("Received %d\n", x);
 		x *= 4;
 		if (write(p1[1], &x, sizeof(x)) == -1) { 
-			return 4; 
+			return 4;  
 		}
 		printf("Wrote %d\n", x);
 	} 
 	else {
 		//Parent
+		strcpy(directory, "ls d1");
 		srand(time(NULL));
 		int y = rand() % 10;
 		if (write(p1[1], &y, sizeof(y)) == -1) {
@@ -43,8 +48,7 @@ int main(int argc, char* argv[]) {
 		printf("Result is %d\n", y);
 		wait(NULL);
 	}
-	char* command;
-	strcpy(command, "ls");
-	system(command);
+	system(directory);
+
 	return 0;
 }
