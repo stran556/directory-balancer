@@ -5,38 +5,35 @@
 #include <time.h>
 #include <sys/types.h>
 #include <sys/wait.h>
-
+//fd[0] = input, write
+//fd[1] = output, read
 int main(int argc, char* argv[]) {
 	
-	
-	char* directory;
+	//Clear both files
+	system(": > d1.txt");
+	system(": > d2.txt");
 
-	int p1[2];
+	int p1[2]; //fd[0], fd[1] main -> child
+	int p2[2]; //fd[0], fd[1] child -> main
 	if (pipe(p1) == -1) {
 		return 1;
 	}
 	int pid = fork();
 	if (pid == -1) {
-		return 2;
+		return 0;
 	}
 	if (pid == 0) {
 		//child
-		strcpy(directory, "ls d2");
-		int x;
-		if (read(p1[0], &x, sizeof(x)) == -1) { //read data from parent process
-			return 3; 
-		}
-		printf("Received %d\n", x);
-		x *= 4;
-		if (write(p1[1], &x, sizeof(x)) == -1) { 
-			return 4;  
-		}
-		printf("Wrote %d\n", x);
+		system("ls d2 >> d2.txt"); //child process to directory 2
+		system("cat d2.txt");
+		
 	} 
 	else {
-		//Parent
-		strcpy(directory, "ls d1");
-		srand(time(NULL));
+		//main
+		system("ls d1 >> d1.txt"); //main process to directory 1
+		system("cat d1.txt");
+		//srand(time(NULL));
+		/*
 		int y = rand() % 10;
 		if (write(p1[1], &y, sizeof(y)) == -1) {
 			return 5;
@@ -46,9 +43,11 @@ int main(int argc, char* argv[]) {
 			return 6;
 		}
 		printf("Result is %d\n", y);
-		wait(NULL);
+		*/
+		//wait(NULL);
 	}
-	system(directory);
+	
+	
 
 	return 0;
 }
