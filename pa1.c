@@ -56,7 +56,7 @@ int main(int argc, char* argv[]) {
 		//assign d2.txt to process
 		sprintf(main2, "%s.txt", directory);
 		char* main = main2;
-		
+
 		//add file names to list and print
 		sprintf(txt, "%s.txt", directory);
 		
@@ -73,11 +73,30 @@ int main(int argc, char* argv[]) {
 			return 1;
 		}
 		//close(p2[1]);
+
 		printf("List from child 1 received by child 2: %s\n", txt); //should be d1.txt
 		printf("File for directory: %s: %s\n", directory, main);
 
-	}
+		FILE *fpipe;
+		char *command = "wc -l < d1.txt";
+		char c = 0;
+		char s[100] = "";
 
+		if (0 == (fpipe = (FILE*)popen(command, "r"))) {
+			exit(EXIT_FAILURE);
+		}
+
+		while (fread(&c, sizeof c, 1, fpipe)) {
+			//printf("%c", c);
+			sprintf(s, "%s%c", s, c);
+			
+		}
+		printf("Num:%s", s);
+		pclose(fpipe);
+		exit(EXIT_SUCCESS);
+		
+		
+	}	
 	//main AKA child 1
 	else {
 		//assign main process to directory 1
@@ -114,6 +133,6 @@ int main(int argc, char* argv[]) {
 	//sprintf(cmd, "wc -l < %s", txt);
 	//system(cmd);
 
-	
 	return 0;
+	
 }
