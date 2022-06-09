@@ -17,6 +17,8 @@ int main(int argc, char* argv[]) {
 
 	char txt[100];
 	char command[100];
+	char main1[100];
+	char main2[100];
 
 	//Verify initial discrepancies between d1 and d2
 	system("diff d1 d2");
@@ -50,9 +52,14 @@ int main(int argc, char* argv[]) {
 
 		//assign child process to directory 2
 		char* directory = "d2"; 
+
+		//assign d2.txt to process
+		sprintf(main2, "%s.txt", directory);
+		char* main = main2;
 		
 		//add file names to list and print
 		sprintf(txt, "%s.txt", directory);
+		
 		sprintf(command, "ls %s >> %s.txt", directory, directory);
 		system(command); 
 		sprintf(command, "cat %s.txt", directory);
@@ -66,17 +73,23 @@ int main(int argc, char* argv[]) {
 			return 1;
 		}
 		//close(p2[1]);
-		printf("List from child 1 received by child 2: %s\n", txt);
-		
+		printf("List from child 1 received by child 2: %s\n", txt); //should be d1.txt
+		printf("File for directory: %s: %s\n", directory, main);
+
 	}
 
 	//main AKA child 1
 	else {
 		//assign main process to directory 1
 		char* directory = "d1"; 
-		
+
+		//assign d1.txt to process
+		sprintf(main1, "%s.txt", directory);
+		char* main = main1;
+
 		//add file names to list and print
 		sprintf(txt, "%s.txt", directory);
+		
 		sprintf(command, "ls %s >> %s", directory, txt);
 		system(command); 
 		sprintf(command, "cat %s.txt", directory);
@@ -89,14 +102,18 @@ int main(int argc, char* argv[]) {
 		if (read(p2[0], txt, 7) < 0) { //read from pipe p2
 			return 1;
 		}
-		printf("List from child 2 received by child 1: %s\n", txt);
+		printf("List from child 2 received by child 1: %s\n", txt); //should be d2.txt
 		//close(p1[1]);
 		
 		//srand(time(NULL));
 		//wait(NULL);
+
+		printf("File for directory: %s: %s\n", directory, main);
 	}
-	char cmd[100];
-	sprintf(cmd, "wc -l < %s", txt);
-	system(cmd);
+	//char cmd[100];
+	//sprintf(cmd, "wc -l < %s", txt);
+	//system(cmd);
+
+	
 	return 0;
 }
