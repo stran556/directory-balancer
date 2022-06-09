@@ -9,11 +9,15 @@
 #include <time.h>
 #include <sys/types.h>
 #include <sys/wait.h>
-//fd[0] = input, write
-//fd[1] = output, read
+
+//fd[0] = read
+//fd[1] = write
+
 int main(int argc, char* argv[]) {
 
 	char txt[100];
+	char command[100];
+
 	//Verify initial discrepancies between d1 and d2
 	system("diff d1 d2");
 
@@ -21,6 +25,7 @@ int main(int argc, char* argv[]) {
 	system(": > d1.txt");
 	system(": > d2.txt");
 
+	//Create pipes
 	int p1[2]; //main -> child
 	int p2[2]; // child -> main
 
@@ -33,22 +38,21 @@ int main(int argc, char* argv[]) {
 		printf("Error.");
 		return 1;
 	}
+	//Once pipes are created, then fork so "children are aware"
 	int pid = fork();
 	if (pid == -1) {
 		return 0;
 	}
 
-	char command[100];
+	
 	//child AKA child 2
 	if (pid == 0) {
 
 		//assign child process to directory 2
 		char* directory = "d2"; 
 		
-		//text file name
-		sprintf(txt, "%s.txt", directory);
-		
 		//add file names to list and print
+		sprintf(txt, "%s.txt", directory);
 		sprintf(command, "ls %s >> %s.txt", directory, directory);
 		system(command); 
 		sprintf(command, "cat %s.txt", directory);
@@ -71,10 +75,8 @@ int main(int argc, char* argv[]) {
 		//assign main process to directory 1
 		char* directory = "d1"; 
 		
-		//text file name
-		sprintf(txt, "%s.txt", directory);
-
 		//add file names to list and print
+		sprintf(txt, "%s.txt", directory);
 		sprintf(command, "ls %s >> %s", directory, txt);
 		system(command); 
 		sprintf(command, "cat %s.txt", directory);
@@ -93,7 +95,8 @@ int main(int argc, char* argv[]) {
 		//srand(time(NULL));
 		//wait(NULL);
 	}
-	
-
+	char cmd[100];
+	sprintf(cmd, "wc -l < %s", txt);
+	system(cmd);
 	return 0;
 }
