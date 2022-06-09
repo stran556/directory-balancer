@@ -78,11 +78,12 @@ int main(int argc, char* argv[]) {
 		printf("File for directory: %s: %s\n", directory, main);
 
 		FILE *fpipe;
-		char *command = "wc -l < d1.txt";
+		sprintf(command, "wc -l < %s", main);
+		char *filecnt = command;
 		char c = 0;
 		char s[100] = "";
 
-		if (0 == (fpipe = (FILE*)popen(command, "r"))) {
+		if (0 == (fpipe = (FILE*)popen(filecnt, "r"))) {
 			exit(EXIT_FAILURE);
 		}
 
@@ -91,10 +92,13 @@ int main(int argc, char* argv[]) {
 			sprintf(s, "%s%c", s, c);
 			
 		}
-		printf("Num:%s", s);
+		printf("File size of %s:%s", main, s);
 		pclose(fpipe);
 		exit(EXIT_SUCCESS);
+//-----------------------
 		
+		
+
 		
 	}	
 	//main AKA child 1
@@ -128,6 +132,25 @@ int main(int argc, char* argv[]) {
 		//wait(NULL);
 
 		printf("File for directory: %s: %s\n", directory, main);
+
+		FILE *fpipe2;
+		sprintf(command, "wc -l < %s", main);
+		char *filecnt2 = command;
+		char cs = 0;
+		char s2[100] = "";
+
+		if (0 == (fpipe2 = (FILE*)popen(filecnt2, "r"))) {
+			exit(EXIT_FAILURE);
+		}
+
+		while (fread(&cs, sizeof cs, 1, fpipe2)) {
+			//printf("%c", c);
+			sprintf(s2, "%s%c", s2, cs);
+			
+		}
+		printf("File size of %s:%s", main, s2);
+		pclose(fpipe2);
+		exit(EXIT_SUCCESS);
 	}
 	//char cmd[100];
 	//sprintf(cmd, "wc -l < %s", txt);
