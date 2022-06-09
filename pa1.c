@@ -1,3 +1,7 @@
+//Sean Tran
+//CS 4348
+//Assignment #1
+
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -35,55 +39,60 @@ int main(int argc, char* argv[]) {
 	}
 
 	char command[100];
-	//child
-	if (pid == 0) { //child, so use pipe p2
-		char* directory = "d2"; //assign child process to directory 2
+	//child AKA child 2
+	if (pid == 0) {
+
+		//assign child process to directory 2
+		char* directory = "d2"; 
 		
 		//text file name
+		sprintf(txt, "%s.txt", directory);
 		
-		
-		//add file names to list
+		//add file names to list and print
 		sprintf(command, "ls %s >> %s.txt", directory, directory);
 		system(command); 
-
-		//test print
 		sprintf(command, "cat %s.txt", directory);
 		system(command);
+
+		//printf("List: %s\n", txt);
+		if (write(p2[1], txt, 7) < 0){ //write to pipe p2
+			return 1;
+		}
+		if (read(p1[0], txt, 7) < 0) { //read from pipe p1
+			return 1;
+		}
+		//close(p2[1]);
+		printf("List from child 1 received by child 2: %s\n", txt);
+		
 	}
 
-	//main 
-	else { //main, so use pipe p1
-		char* directory = "d1"; //assign main process to directory 1
-		sprintf(txt, "%s.txt", directory);
-
+	//main AKA child 1
+	else {
+		//assign main process to directory 1
+		char* directory = "d1"; 
+		
 		//text file name
 		sprintf(txt, "%s.txt", directory);
 
-		//add file names to list
+		//add file names to list and print
 		sprintf(command, "ls %s >> %s", directory, txt);
 		system(command); 
-
-		//test print
 		sprintf(command, "cat %s.txt", directory);
 		system(command);
-
-		//write(p1[1], str)
+		
+		//printf("List: %s\n", txt);
+		if (write(p1[1], txt, 7) < 0){ //write to pipe p1
+			return 1;
+		}
+		if (read(p2[0], txt, 7) < 0) { //read from pipe p2
+			return 1;
+		}
+		printf("List from child 2 received by child 1: %s\n", txt);
+		//close(p1[1]);
 		
 		//srand(time(NULL));
-		/*
-		int y = rand() % 10;
-		if (write(p1[1], &y, sizeof(y)) == -1) {
-			return 5;
-		}
-		printf("Wrote %d\n", y);
-		if (read(p1[0], &y, sizeof(y)) == -1) {
-			return 6;
-		}
-		printf("Result is %d\n", y);
-		*/
 		//wait(NULL);
 	}
-	
 	
 
 	return 0;
