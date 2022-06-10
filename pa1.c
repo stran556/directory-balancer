@@ -173,28 +173,30 @@ int main(int argc, char* argv[]) {
 		//for (d = 0; d < d1count; ++d) 
 		//	printf("%s\n", d1array[d]);
 
-
+		sleep(1);
 		//Creating missing files in directory 2
 		bool found = false;
+		char addfile[1000];
 		for(int i = 0; i < d1count; i++){
 			for(int j = 0; j < d2count; j++){
 				//If lengths do not match, neither can the files
 				if((strlen(d1array[i]) == strlen(d2array[j])) && !memcmp(d1array[i], d2array[j], strlen(d1array[i]))) {
 					found = true;
 				}
-				//printf("%s and %s: ", d1array[i], d2array[j]);
-				//printf("%d\n", found);
+				printf("%s and %s: ", d1array[i], d2array[j]);
+				printf("%d\n", found);
 				if(found){
 					break;
 				}
 			}
 			if(!found){
-				printf("");
+				sprintf(addfile, "touch %s/%s", directory, d1array[i]);
+				system(addfile);
+				printf("Adding: %s\n", addfile);
 			}
 			found = false;
 		}
 		
-
 	}	
 	//==============================End Child 2 - Begin Child 1=====================================
 	//main AKA child 1
@@ -320,22 +322,24 @@ int main(int argc, char* argv[]) {
 		
 		//for (d = 0; d < d2count; ++d) 
 		//	printf("%s\n", d2array[d]);	
-
+		char addfile[1000];
 		bool found = false;
-			for(int i = 0; i < d1count; i++){
-				for(int j = 0; j < d2count; j++){
+			for(int i = 0; i < d2count; i++){
+				for(int j = 0; j < d1count; j++){
 					//If lengths do not match, neither can the files
-					if((strlen(d1array[i]) == strlen(d2array[j])) && !memcmp(d1array[i], d2array[j], strlen(d1array[i]))) {
+					if((strlen(d2array[i]) == strlen(d1array[j])) && !memcmp(d2array[i], d1array[j], strlen(d1array[i]))) {
 						found = true;
 					}
-					//printf("%s and %s: ", d1array[i], d2array[j]);
-					//printf("%d\n", found);
+					printf("%s and %s: ", d2array[i], d1array[j]);
+					printf("%d\n", found);
 					if(found){
 						break;
 					}
 				}
 				if(!found){
-					printf("");
+					sprintf(addfile, "touch %s/%s", directory, d2array[i]);
+					system(addfile);
+					printf("Adding: %s\n", addfile);
 				}
 				found = false;
 			}
@@ -345,7 +349,7 @@ int main(int argc, char* argv[]) {
 	//sprintf(cmd, "wc -l < %s", txt);
 	//system(cmd); 
 	//printf("Process: %d Received other directory: %s\n", pid, snt);
-
+	sleep(2);
 	return 0;
 	
 }
