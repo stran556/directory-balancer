@@ -50,7 +50,7 @@ int main(int argc, char* argv[]) {
 		return 0;
 	}
 
-	//child AKA child 2
+	//===================================Begin Child 2===========================================
 	if (pid == 0) {
 
 		//assign child process to directory 2
@@ -95,18 +95,7 @@ int main(int argc, char* argv[]) {
 			sprintf(snt, "%s%c", snt, c);
 			
 		}
-		//Retrieve number of files in list
-		int i, count = 0;
-		for(i = 0; snt[i]; i++)  
-		{
-			if(snt[i] == '\n')
-			{
-			count++;
-			}
-		}
-
-		//Sizeof for files
-		printf("Count for %s: %d\n", directory, count);
+		
 		int len2 = strlen(snt);
 		int *rlen2 = malloc(sizeof *rlen2);
 		*rlen2 = len2;
@@ -139,9 +128,49 @@ int main(int argc, char* argv[]) {
 		//SNT IS D2, RCV IS D1
 		printf("RCV %s %s", directory, rcv);
 		printf("SNT %s %s", directory, snt);
-	}	
-	//--------------------------------------------------------------------------------
+
+		//Retrieve number of files in list
+		int i, d2count = 0;
+		for(i = 0; snt[i]; i++) {
+			if(snt[i] == '\n')
+			{
+			d2count++;
+			}
+		}
+		int d1count = 0;
+		for(i = 0; rcv[i]; i++) {
+			if(rcv[i] == '\n') {
+			d1count++;
+			}
+		}
+
+		//Sizeof for files
+		printf("SNT count for %s: %d\n", directory, d2count);
+		printf("RCV count for %s: %d\n", directory, d1count);
+		printf("ARRAYS for D2\n");
+		int f = 0;
+		char *s = strtok (snt, "\n");
+		char *d2array[d2count];
+
+		while (s != NULL) {
+			d2array[f++] = s;
+			s = strtok (NULL, "\n");
+		}
+		for (f = 0; f < d2count; ++f) 
+			printf("%s\n", d2array[f]);
+
+		int d = 0;
+		char *t = strtok (rcv, "\n");
+		char *d1array[d1count];
+		while (t != NULL) {
+			d1array[d++] = t;
+			t = strtok (NULL, "\n");
+		}
 		
+		for (d = 0; d < d1count; ++d) 
+			printf("%s\n", d1array[d]);
+	}	
+	//==============================End Child 2 - Begin Child 1=====================================
 	//main AKA child 1
 	else {
 		//assign main process to directory 1
@@ -188,20 +217,9 @@ int main(int argc, char* argv[]) {
 		while (fread(&c2, sizeof c2, 1, fpipe2)) {
 			//printf("%c", c);
 			sprintf(snt, "%s%c", snt, c2);
-			
 		}
+		pclose(fpipe2);
 
-		//Retrieve number of files in list
-		int i, count = 0;
-		for(i = 0; snt[i]; i++)  
-		{
-			if(snt[i] == '\n') {
-			count++;
-			}
-		}
-
-		//Sizeof for files
-		printf("Count for %s: %d\n", directory, count);
 		int len = strlen(snt);
 		int *rlen = malloc(sizeof *rlen);
 		*rlen = len;
@@ -228,20 +246,61 @@ int main(int argc, char* argv[]) {
 		}
 		printf("Files in d2:%s", snt); 
 		printf("Size: %lu\n", strlen(snt));
-		pclose(fpipe2);
+		
 		//exit(EXIT_SUCCESS);
 		
 		//SNT IS D1, RCV IS D2
 		printf("RCV %s %s", directory, rcv);
 		printf("SNT %s %s", directory, snt);
 		
+		//Retrieve number of files in list
+		int j, d1count = 0;
+		for(j = 0; snt[j]; j++) {
+			if(snt[j] == '\n') {
+			d1count++;
+			}
+		}
+		int d2count = 0;
+		for(j = 0; rcv[j]; j++) {
+			if(rcv[j] == '\n') {
+			d2count++;
+			}
+		}
+
+		//Sizeof for files
+		printf("SNT count for %s: %d\n", directory, d1count);
+		printf("RCV count for %s: %d\n", directory, d2count);
+		printf("ARRAYS for D1\n");
+		int c = 0;
+		char *s = strtok (snt, "\n");
+		char *d1array[d1count];
+
+		while (s != NULL) {
+			d1array[c++] = s;
+			s = strtok (NULL, "\n");
+		}
+		//for (c = 0; c < d1count; ++c) 
+		//	printf("%s\n", d1array[c]);
+
+		int d = 0;
+		char *t = strtok (rcv, "\n");
+		char *d2array[d2count];
+		while (t != NULL) {
+			d2array[d++] = t;
+			t = strtok (NULL, "\n");
+		}
+		
+		//for (d = 0; d < d2count; ++d) 
+		//	printf("%s\n", d2array[d]);	
+
+
 	}
+	//===================================End Child 1===========================================
 	//char cmd[100];
 	//sprintf(cmd, "wc -l < %s", txt);
 	//system(cmd); 
 	//printf("Process: %d Received other directory: %s\n", pid, snt);
 
-	
 	return 0;
 	
 }
