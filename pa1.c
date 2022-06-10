@@ -9,6 +9,7 @@
 #include <time.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+#include <stdbool.h>
 
 //fd[0] = read
 //fd[1] = write
@@ -147,6 +148,8 @@ int main(int argc, char* argv[]) {
 		//Sizeof for files
 		printf("SNT count for %s: %d\n", directory, d2count);
 		printf("RCV count for %s: %d\n", directory, d1count);
+
+		//Separating SNT and RCV files into an array
 		printf("ARRAYS for D2\n");
 		int f = 0;
 		char *s = strtok (snt, "\n");
@@ -156,8 +159,8 @@ int main(int argc, char* argv[]) {
 			d2array[f++] = s;
 			s = strtok (NULL, "\n");
 		}
-		for (f = 0; f < d2count; ++f) 
-			printf("%s\n", d2array[f]);
+		//for (f = 0; f < d2count; ++f) 
+		//	printf("%s\n", d2array[f]);
 
 		int d = 0;
 		char *t = strtok (rcv, "\n");
@@ -167,8 +170,31 @@ int main(int argc, char* argv[]) {
 			t = strtok (NULL, "\n");
 		}
 		
-		for (d = 0; d < d1count; ++d) 
-			printf("%s\n", d1array[d]);
+		//for (d = 0; d < d1count; ++d) 
+		//	printf("%s\n", d1array[d]);
+
+
+		//Creating missing files in directory 2
+		bool found = false;
+		for(int i = 0; i < d1count; i++){
+			for(int j = 0; j < d2count; j++){
+				//If lengths do not match, neither can the files
+				if((strlen(d1array[i]) == strlen(d2array[j])) && !memcmp(d1array[i], d2array[j], strlen(d1array[i]))) {
+					found = true;
+				}
+				//printf("%s and %s: ", d1array[i], d2array[j]);
+				//printf("%d\n", found);
+				if(found){
+					break;
+				}
+			}
+			if(!found){
+				printf("");
+			}
+			found = false;
+		}
+		
+
 	}	
 	//==============================End Child 2 - Begin Child 1=====================================
 	//main AKA child 1
@@ -270,6 +296,8 @@ int main(int argc, char* argv[]) {
 		//Sizeof for files
 		printf("SNT count for %s: %d\n", directory, d1count);
 		printf("RCV count for %s: %d\n", directory, d2count);
+
+		//Separating SNT and RCV files into an array
 		printf("ARRAYS for D1\n");
 		int c = 0;
 		char *s = strtok (snt, "\n");
@@ -293,7 +321,24 @@ int main(int argc, char* argv[]) {
 		//for (d = 0; d < d2count; ++d) 
 		//	printf("%s\n", d2array[d]);	
 
-
+		bool found = false;
+			for(int i = 0; i < d1count; i++){
+				for(int j = 0; j < d2count; j++){
+					//If lengths do not match, neither can the files
+					if((strlen(d1array[i]) == strlen(d2array[j])) && !memcmp(d1array[i], d2array[j], strlen(d1array[i]))) {
+						found = true;
+					}
+					//printf("%s and %s: ", d1array[i], d2array[j]);
+					//printf("%d\n", found);
+					if(found){
+						break;
+					}
+				}
+				if(!found){
+					printf("");
+				}
+				found = false;
+			}
 	}
 	//===================================End Child 1===========================================
 	//char cmd[100];
