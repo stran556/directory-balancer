@@ -13,7 +13,7 @@
 //fd[0] = read
 //fd[1] = write
 
-//rcv = files of local directory
+//snt = files of local directory
 //snt = files received from other child
 int main(int argc, char* argv[]) {
 
@@ -21,7 +21,7 @@ int main(int argc, char* argv[]) {
 	char command[1000];
 	char main1[1000];
 	char main2[1000];
-	char rcv[1000] = "";
+	char snt[1000] = "";
 	int len;
 
 	//Verify initial discrepancies between d1 and d2
@@ -92,14 +92,14 @@ int main(int argc, char* argv[]) {
 
 		while (fread(&c, sizeof c, 1, fpipe)) {
 			//printf("%c", c);
-			sprintf(rcv, "%s%c", rcv, c);
+			sprintf(snt, "%s%c", snt, c);
 			
 		}
 		//Retrieve number of files in list
 		int i, count = 0;
-		for(i = 0; rcv[i]; i++)  
+		for(i = 0; snt[i]; i++)  
 		{
-			if(rcv[i] == '\n')
+			if(snt[i] == '\n')
 			{
 			count++;
 			}
@@ -107,7 +107,7 @@ int main(int argc, char* argv[]) {
 
 		//Sizeof for files
 		printf("Count for %s: %d\n", directory, count);
-		int len2 = strlen(rcv);
+		int len2 = strlen(snt);
 		int *rlen2 = malloc(sizeof *rlen2);
 		*rlen2 = len2;
 		printf("Size of OG %s: %d\n", directory, *rlen2);
@@ -121,25 +121,24 @@ int main(int argc, char* argv[]) {
 		}
 		printf("Size of RCV %s: %d\n", directory, len2);
 
-		char d2rcv[len2 + 1];
+		char rcv[len2 + 1];
 
 		//Pipe file list to other child
-		printf("Files in d2:%s", rcv);
-		char* snt2 = rcv;
-		if (write(p2[1], rcv, *rlen2 + 1) < 0){ //write to pipe p2
+		printf("Files in d2:%s", snt);
+		if (write(p2[1], snt, *rlen2 + 1) < 0){ //write to pipe p2
 			return 1;
 		}
-		if (read(p1[0], d2rcv, len2 + 1) < 0) { //read from pipe p1
+		if (read(p1[0], rcv, len2 + 1) < 0) { //read from pipe p1
 			return 1;
 		}
-		printf("Files in d1:%s", snt2);
+		printf("Files in d1:%s", snt);
 		//printf("Files in %s:%s", main, s);
 		pclose(fpipe);
 		//exit(EXIT_SUCCESS);	
 
-		//RCV IS D2, D2RCV IS D1
-		printf("TEST 2%s", d2rcv);
-		printf("TESTX %s", rcv);
+		//SNT IS D2, RCV IS D1
+		printf("RCV %s %s", directory, rcv);
+		printf("SNT %s %s", directory, snt);
 	}	
 	//--------------------------------------------------------------------------------
 		
@@ -188,22 +187,22 @@ int main(int argc, char* argv[]) {
 
 		while (fread(&c2, sizeof c2, 1, fpipe2)) {
 			//printf("%c", c);
-			sprintf(rcv, "%s%c", rcv, c2);
+			sprintf(snt, "%s%c", snt, c2);
 			
 		}
 
 		//Retrieve number of files in list
 		int i, count = 0;
-		for(i = 0; rcv[i]; i++)  
+		for(i = 0; snt[i]; i++)  
 		{
-			if(rcv[i] == '\n') {
+			if(snt[i] == '\n') {
 			count++;
 			}
 		}
 
 		//Sizeof for files
 		printf("Count for %s: %d\n", directory, count);
-		int len = strlen(rcv);
+		int len = strlen(snt);
 		int *rlen = malloc(sizeof *rlen);
 		*rlen = len;
 		printf("Size of %s: %d\n", directory, len);
@@ -218,30 +217,29 @@ int main(int argc, char* argv[]) {
 		}
 		printf("Size of RCV %s: %d\n", directory, len);
 
-		char d1rcv[len];
+		char rcv[len];
 		//Pipe file list to other child
-		printf("Files in d1:%s", rcv);
-		char* snt = rcv;
-		if (write(p1[1], rcv, *rlen + 1) < 0){ //write to pipe p1
+		printf("Files in d1:%s", snt);
+		if (write(p1[1], snt, *rlen + 1) < 0){ //write to pipe p1
 			return 1;
 		}
-		if (read(p2[0], d1rcv, len + 1) < 0) { //read from pipe p2
+		if (read(p2[0], rcv, len + 1) < 0) { //read from pipe p2
 			return 1;
 		}
-		printf("Files in d2:%s", rcv); 
-		printf("Size: %lu\n", strlen(rcv));
+		printf("Files in d2:%s", snt); 
+		printf("Size: %lu\n", strlen(snt));
 		pclose(fpipe2);
 		//exit(EXIT_SUCCESS);
 		
-		//RCV IS D1, D1RCV IS D2
-		printf("TEST %s", d1rcv);
-		printf("TESTX %s", rcv);
+		//SNT IS D1, RCV IS D2
+		printf("RCV %s %s", directory, rcv);
+		printf("SNT %s %s", directory, snt);
 		
 	}
 	//char cmd[100];
 	//sprintf(cmd, "wc -l < %s", txt);
 	//system(cmd); 
-	//printf("Process: %d Received other directory: %s\n", pid, rcv);
+	//printf("Process: %d Received other directory: %s\n", pid, snt);
 
 	
 	return 0;
