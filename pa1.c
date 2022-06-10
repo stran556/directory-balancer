@@ -1,5 +1,6 @@
 //Sean Tran
-//CS 4348
+//CS 4348.0U2
+//Prof: Ravi Prakash
 //Assignment #1
 
 #include <stdio.h>
@@ -11,18 +12,18 @@
 #include <sys/wait.h>
 #include <stdbool.h>
 
-//fd[0] = read
-//fd[1] = write
 
-//snt = files of local directory
-//snt = files received from other child
+/*
+ - Program begins by clearing file names from lists and building pipes. 
+ - Once pipes are created successfully, parent forks. 
+*/
 int main(int argc, char* argv[]) {
 
 	char txt[1000];
 	char command[1000];
 	char main1[1000];
 	char main2[1000];
-	char snt[1000] = "";
+	char snt[1000];
 	int len;
 
 	//Verify initial discrepancies between d1 and d2
@@ -32,7 +33,6 @@ int main(int argc, char* argv[]) {
 	system(": > d1.txt");
 	system(": > d2.txt");
 
-	//Create pipes
 	int p1[2]; //main -> child
 	int p2[2]; // child -> main
 
@@ -45,16 +45,24 @@ int main(int argc, char* argv[]) {
 		printf("Error.");
 		return 1;
 	}
-	//Once pipes are created, then fork so "children are aware"
 	int pid = fork();
 	if (pid == -1) {
 		return 0;
 	}
 
-	//===================================Begin Child 2===========================================
-	if (pid == 0) {
+	//===================================Begin Child 2===================================//
 
-		//assign child process to directory 2
+	/*
+	 - Begin by assigning directory 2 to child 2
+	 - Files present in directory 'd2' are added to list 'd2.txt' by name
+	 - Child 2 sends list 'd2.txt' to child 1 via pipe, receiving 'd1.txt' via pipe in return
+	 - Child 2 translates 'd2.txt' into a variable before sending it to child 1 via pipe, 
+	 	receiving 'd1.txt' as a variable in return
+	 - Separate file names in list into an array for parsing
+	 - Identify files in directory 'd1' missing from directory 'd2' and create them in directory 'd2'
+	*/
+
+	if (pid == 0) {
 		char* directory = "d2"; 
 
 		//assign d2.txt to process
@@ -63,13 +71,12 @@ int main(int argc, char* argv[]) {
 
 		//add file names to list and print
 		sprintf(txt, "%s.txt", directory);
-		
 		sprintf(command, "ls %s >> %s.txt", directory, directory);
 		system(command); 
 		sprintf(command, "cat %s.txt", directory);
 		system(command);
 
-		//printf("List: %s\n", txt);
+		//Child sends list to other child
 		if (write(p2[1], txt, 7) < 0){ //write to pipe p2
 			return 1;
 		}
@@ -173,7 +180,6 @@ int main(int argc, char* argv[]) {
 		//for (d = 0; d < d1count; ++d) 
 		//	printf("%s\n", d1array[d]);
 
-		sleep(1);
 		//Creating missing files in directory 2
 		bool found = false;
 		char addfile[1000];
@@ -199,6 +205,16 @@ int main(int argc, char* argv[]) {
 		
 	}	
 	//==============================End Child 2 - Begin Child 1=====================================
+	/*
+	 - Begin by assigning directory 1 to child 1
+	 - Files present in directory 'd1' are added to list 'd1.txt' by name
+	 - Child 1 sends list 'd1.txt' to child 2 via pipe, receiving 'd2.txt' via pipe in return
+	 - Child 1 translates 'd1.txt' into a variable before sending it to child 2 via pipe, 
+	 	receiving 'd2.txt' as a variable in return
+	 - Separate file names in list into an array for parsing
+	 - Identify files in directory 'd2' missing from directory 'd1' and create them in directory 'd1'
+	*/
+
 	//main AKA child 1
 	else {
 		//assign main process to directory 1
@@ -210,13 +226,12 @@ int main(int argc, char* argv[]) {
 
 		//add file names to list and print
 		sprintf(txt, "%s.txt", directory);
-		
 		sprintf(command, "ls %s >> %s", directory, txt);
 		system(command); 
 		sprintf(command, "cat %s.txt", directory);
 		system(command);
 		
-		//printf("List: %s\n", txt);
+		//Child sends list to other child
 		if (write(p1[1], txt, 7) < 0){ //write to pipe p1
 			return 1;
 		}
@@ -322,6 +337,8 @@ int main(int argc, char* argv[]) {
 		
 		//for (d = 0; d < d2count; ++d) 
 		//	printf("%s\n", d2array[d]);	
+
+
 		char addfile[1000];
 		bool found = false;
 			for(int i = 0; i < d2count; i++){
@@ -332,11 +349,11 @@ int main(int argc, char* argv[]) {
 					}
 					printf("%s and %s: ", d2array[i], d1array[j]);
 					printf("%d\n", found);
-					if(found){
+					if(found) {
 						break;
 					}
 				}
-				if(!found){
+				if(!found) {
 					sprintf(addfile, "touch %s/%s", directory, d2array[i]);
 					system(addfile);
 					printf("Adding: %s\n", addfile);
@@ -345,10 +362,6 @@ int main(int argc, char* argv[]) {
 			}
 	}
 	//===================================End Child 1===========================================
-	//char cmd[100];
-	//sprintf(cmd, "wc -l < %s", txt);
-	//system(cmd); 
-	//printf("Process: %d Received other directory: %s\n", pid, snt);
 	sleep(2);
 	return 0;
 	
