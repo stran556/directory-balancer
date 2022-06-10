@@ -23,7 +23,6 @@ int main(int argc, char* argv[]) {
 	char main2[1000];
 	char rcv[1000] = "";
 	int len[1000];
-	int ln[1000];
 
 	//Verify initial discrepancies between d1 and d2
 	system("diff d1 d2");
@@ -51,7 +50,6 @@ int main(int argc, char* argv[]) {
 		return 0;
 	}
 
-	
 	//child AKA child 2
 	if (pid == 0) {
 
@@ -133,13 +131,10 @@ int main(int argc, char* argv[]) {
 		printf("Files in d1:%s", snt2);
 		//printf("Files in %s:%s", main, s);
 		pclose(fpipe);
-		//exit(EXIT_SUCCESS);
-//-------------------------------------------------------------------------------
-		
-		
-
-		
+		//exit(EXIT_SUCCESS);	
 	}	
+	//--------------------------------------------------------------------------------
+		
 	//main AKA child 1
 	else {
 		//assign main process to directory 1
