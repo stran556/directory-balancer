@@ -121,20 +121,25 @@ int main(int argc, char* argv[]) {
 		}
 		printf("Size of RCV %s: %d\n", directory, len2);
 
+		char d2rcv[len2 + 1];
 
 		//Pipe file list to other child
 		printf("Files in d2:%s", rcv);
 		char* snt2 = rcv;
-		if (write(p2[1], rcv, *rlen2) < 0){ //write to pipe p2
+		if (write(p2[1], rcv, *rlen2 + 1) < 0){ //write to pipe p2
 			return 1;
 		}
-		if (read(p1[0], rcv, len2) < 0) { //read from pipe p1
+		if (read(p1[0], d2rcv, len2 + 1) < 0) { //read from pipe p1
 			return 1;
 		}
 		printf("Files in d1:%s", snt2);
 		//printf("Files in %s:%s", main, s);
 		pclose(fpipe);
 		//exit(EXIT_SUCCESS);	
+
+		//RCV IS D2, D2RCV IS D1
+		printf("TEST 2%s", d2rcv);
+		printf("TESTX %s", rcv);
 	}	
 	//--------------------------------------------------------------------------------
 		
@@ -212,27 +217,31 @@ int main(int argc, char* argv[]) {
 			return 1;
 		}
 		printf("Size of RCV %s: %d\n", directory, len);
-		
+
+		char d1rcv[len];
 		//Pipe file list to other child
 		printf("Files in d1:%s", rcv);
 		char* snt = rcv;
-		if (write(p1[1], rcv, *rlen) < 0){ //write to pipe p1
+		if (write(p1[1], rcv, *rlen + 1) < 0){ //write to pipe p1
 			return 1;
 		}
-		if (read(p2[0], rcv, len) < 0) { //read from pipe p2
+		if (read(p2[0], d1rcv, len + 1) < 0) { //read from pipe p2
 			return 1;
 		}
-		printf("Files in d2:%s", snt);
+		printf("Files in d2:%s", rcv); 
 		printf("Size: %lu\n", strlen(rcv));
 		pclose(fpipe2);
 		//exit(EXIT_SUCCESS);
 		
+		//RCV IS D1, D1RCV IS D2
+		printf("TEST %s", d1rcv);
+		printf("TESTX %s", rcv);
 		
 	}
 	//char cmd[100];
 	//sprintf(cmd, "wc -l < %s", txt);
 	//system(cmd); 
-	printf("Process: %d Received other directory: %s\n", pid, rcv);
+	//printf("Process: %d Received other directory: %s\n", pid, rcv);
 
 	
 	return 0;
