@@ -17,11 +17,14 @@
 //snt = files received from other child
 int main(int argc, char* argv[]) {
 
-	char txt[100];
-	char command[100];
-	char main1[100];
-	char main2[100];
-	char rcv[100] = "";
+	char txt[1000];
+	char command[1000];
+	char main1[1000];
+	char main2[1000];
+	char rcv[1000] = "";
+	int len[1000];
+	int ln[1000];
+
 	//Verify initial discrepancies between d1 and d2
 	system("diff d1 d2");
 
@@ -94,6 +97,7 @@ int main(int argc, char* argv[]) {
 			sprintf(rcv, "%s%c", rcv, c);
 			
 		}
+		//Retrieve number of files in list
 		int i, count = 0;
 		for(i = 0; rcv[i]; i++)  
 		{
@@ -102,23 +106,35 @@ int main(int argc, char* argv[]) {
 			count++;
 			}
 		}
+
+		//Sizeof for files
 		printf("Count for %s: %d\n", directory, count);
+		int len2 = strlen(rcv);
+		printf("Size of %s: %d\n", directory, len2);
 
-
-
-		printf("Files in d2:%s", rcv);
-		char* snt2 = rcv;
-		if (write(p2[1], rcv, strlen(rcv) + 1) < 0){ //write to pipe p2
+		if (write(p2[1], &len2, sizeof(len2)) < 0){ //write to pipe p2
 			return 1;
 		}
-		if (read(p1[0], rcv, strlen(rcv) + 1) < 0) { //read from pipe p1
+		if (read(p1[0], &len2, sizeof(len2)) < 0) { //read from pipe p1
+			return 1;
+		}
+		printf("Size of %s: %d\n", directory, len2);
+
+
+		//Pipe file list to other child
+		printf("Files in d2:%s", rcv);
+		char* snt2 = rcv;
+		if (write(p2[1], rcv, strlen(rcv)) < 0){ //write to pipe p2
+			return 1;
+		}
+		if (read(p1[0], rcv, strlen(rcv)) < 0) { //read from pipe p1
 			return 1;
 		}
 		printf("Files in d1:%s", snt2);
 		//printf("Files in %s:%s", main, s);
 		pclose(fpipe);
 		//exit(EXIT_SUCCESS);
-//-----------------------
+//-------------------------------------------------------------------------------
 		
 		
 
@@ -173,26 +189,37 @@ int main(int argc, char* argv[]) {
 			
 		}
 
+		//Retrieve number of files in list
 		int i, count = 0;
 		for(i = 0; rcv[i]; i++)  
 		{
-			if(rcv[i] == '\n')
-			{
+			if(rcv[i] == '\n') {
 			count++;
 			}
 		}
+
+		//Sizeof for files
 		printf("Count for %s: %d\n", directory, count);
+		int len = strlen(rcv);
+		printf("Size of %s: %d\n", directory, len);
 
 
-
-
-
-		printf("Files in d1:%s", rcv);
-		char* snt = rcv;
-		if (write(p1[1], rcv, strlen(rcv) + 1) < 0){ //write to pipe p1
+		//Pipe file size to other child (JUST SWAPS FILE SIZES FOR USE)
+		if (write(p1[1], &len, sizeof(len)) < 0){ //write to pipe p1
 			return 1;
 		}
-		if (read(p2[0], rcv, strlen(rcv) + 1) < 0) { //read from pipe p2
+		if (read(p2[0], &len, sizeof(len)) < 0) { //read from pipe p2
+			return 1;
+		}
+		printf("Size of %s: %d\n", directory, len);
+
+		//Pipe file list to other child
+		printf("Files in d1:%s", rcv);
+		char* snt = rcv;
+		if (write(p1[1], rcv, len) < 0){ //write to pipe p1
+			return 1;
+		}
+		if (read(p2[0], rcv, len) < 0) { //read from pipe p2
 			return 1;
 		}
 		printf("Files in d2:%s", snt);
@@ -205,7 +232,7 @@ int main(int argc, char* argv[]) {
 	//char cmd[100];
 	//sprintf(cmd, "wc -l < %s", txt);
 	//system(cmd); 
-	printf("Process rcv: %d %s\n", pid, rcv);
+	printf("Process: %d Received other directory: %s\n", pid, rcv);
 
 	
 	return 0;
