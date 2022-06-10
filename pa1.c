@@ -22,7 +22,7 @@ int main(int argc, char* argv[]) {
 	char main1[1000];
 	char main2[1000];
 	char rcv[1000] = "";
-	int len[1000];
+	int len;
 
 	//Verify initial discrepancies between d1 and d2
 	system("diff d1 d2");
@@ -108,6 +108,9 @@ int main(int argc, char* argv[]) {
 		//Sizeof for files
 		printf("Count for %s: %d\n", directory, count);
 		int len2 = strlen(rcv);
+		int *rlen2 = malloc(sizeof *rlen2);
+		*rlen2 = len2;
+		printf("Size of OG %s: %d\n", directory, *rlen2);
 		printf("Size of %s: %d\n", directory, len2);
 
 		if (write(p2[1], &len2, sizeof(len2)) < 0){ //write to pipe p2
@@ -116,7 +119,7 @@ int main(int argc, char* argv[]) {
 		if (read(p1[0], &len2, sizeof(len2)) < 0) { //read from pipe p1
 			return 1;
 		}
-		printf("Size of %s: %d\n", directory, len2);
+		printf("Size of RCV %s: %d\n", directory, len2);
 
 
 		//Pipe file list to other child
@@ -196,8 +199,10 @@ int main(int argc, char* argv[]) {
 		//Sizeof for files
 		printf("Count for %s: %d\n", directory, count);
 		int len = strlen(rcv);
+		int *rlen = malloc(sizeof *rlen);
+		*rlen = len;
 		printf("Size of %s: %d\n", directory, len);
-
+		printf("Size of OG %s: %d\n", directory, *rlen);
 
 		//Pipe file size to other child (JUST SWAPS FILE SIZES FOR USE)
 		if (write(p1[1], &len, sizeof(len)) < 0){ //write to pipe p1
@@ -206,22 +211,22 @@ int main(int argc, char* argv[]) {
 		if (read(p2[0], &len, sizeof(len)) < 0) { //read from pipe p2
 			return 1;
 		}
-		printf("Size of %s: %d\n", directory, len);
+		printf("Size of RCV %s: %d\n", directory, len);
 
 		//Pipe file list to other child
 		printf("Files in d1:%s", rcv);
 		char* snt = rcv;
-		if (write(p1[1], rcv, len) < 0){ //write to pipe p1
+		if (write(p1[1], rcv, strlen(rcv)) < 0){ //write to pipe p1
 			return 1;
 		}
-		if (read(p2[0], rcv, len) < 0) { //read from pipe p2
+		if (read(p2[0], rcv, strlen(rcv)) < 0) { //read from pipe p2
 			return 1;
 		}
 		printf("Files in d2:%s", snt);
 		printf("Size: %lu\n", strlen(rcv));
 		pclose(fpipe2);
 		//exit(EXIT_SUCCESS);
-
+		
 		
 	}
 	//char cmd[100];
