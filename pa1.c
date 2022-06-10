@@ -13,13 +13,15 @@
 //fd[0] = read
 //fd[1] = write
 
+//rcv = files of local directory
+//snt = files received from other child
 int main(int argc, char* argv[]) {
 
 	char txt[100];
 	char command[100];
 	char main1[100];
 	char main2[100];
-
+	char rcv[100] = "";
 	//Verify initial discrepancies between d1 and d2
 	system("diff d1 d2");
 
@@ -77,11 +79,11 @@ int main(int argc, char* argv[]) {
 		printf("List from child 1 received by child 2: %s\n", txt); //should be d1.txt
 		printf("File for directory: %s: %s\n", directory, main);
 
+		//Retrieve d2 file as variable
 		FILE *fpipe;
-		sprintf(command, "wc -l < %s", main);
+		sprintf(command, "grep txt %s", main);
 		char *filecnt = command;
 		char c = 0;
-		char s[100] = "";
 
 		if (0 == (fpipe = (FILE*)popen(filecnt, "r"))) {
 			exit(EXIT_FAILURE);
@@ -89,12 +91,33 @@ int main(int argc, char* argv[]) {
 
 		while (fread(&c, sizeof c, 1, fpipe)) {
 			//printf("%c", c);
-			sprintf(s, "%s%c", s, c);
+			sprintf(rcv, "%s%c", rcv, c);
 			
 		}
-		printf("File size of %s:%s", main, s);
+		int i, count = 0;
+		for(i = 0; rcv[i]; i++)  
+		{
+			if(rcv[i] == '\n')
+			{
+			count++;
+			}
+		}
+		printf("Count for %s: %d\n", directory, count);
+
+
+
+		printf("Files in d2:%s", rcv);
+		char* snt2 = rcv;
+		if (write(p2[1], rcv, strlen(rcv) + 1) < 0){ //write to pipe p2
+			return 1;
+		}
+		if (read(p1[0], rcv, strlen(rcv) + 1) < 0) { //read from pipe p1
+			return 1;
+		}
+		printf("Files in d1:%s", snt2);
+		//printf("Files in %s:%s", main, s);
 		pclose(fpipe);
-		exit(EXIT_SUCCESS);
+		//exit(EXIT_SUCCESS);
 //-----------------------
 		
 		
@@ -133,29 +156,58 @@ int main(int argc, char* argv[]) {
 
 		printf("File for directory: %s: %s\n", directory, main);
 
+
+		//Retrieve d1 file as variable
 		FILE *fpipe2;
-		sprintf(command, "wc -l < %s", main);
+		sprintf(command, "grep txt %s", main);
 		char *filecnt2 = command;
-		char cs = 0;
-		char s2[100] = "";
+		char c2 = 0;
 
 		if (0 == (fpipe2 = (FILE*)popen(filecnt2, "r"))) {
 			exit(EXIT_FAILURE);
 		}
 
-		while (fread(&cs, sizeof cs, 1, fpipe2)) {
+		while (fread(&c2, sizeof c2, 1, fpipe2)) {
 			//printf("%c", c);
-			sprintf(s2, "%s%c", s2, cs);
+			sprintf(rcv, "%s%c", rcv, c2);
 			
 		}
-		printf("File size of %s:%s", main, s2);
+
+		int i, count = 0;
+		for(i = 0; rcv[i]; i++)  
+		{
+			if(rcv[i] == '\n')
+			{
+			count++;
+			}
+		}
+		printf("Count for %s: %d\n", directory, count);
+
+
+
+
+
+		printf("Files in d1:%s", rcv);
+		char* snt = rcv;
+		if (write(p1[1], rcv, strlen(rcv) + 1) < 0){ //write to pipe p1
+			return 1;
+		}
+		if (read(p2[0], rcv, strlen(rcv) + 1) < 0) { //read from pipe p2
+			return 1;
+		}
+		printf("Files in d2:%s", snt);
+		printf("Size: %lu\n", strlen(rcv));
 		pclose(fpipe2);
-		exit(EXIT_SUCCESS);
+		//exit(EXIT_SUCCESS);
+
+		
 	}
 	//char cmd[100];
 	//sprintf(cmd, "wc -l < %s", txt);
-	//system(cmd);
+	//system(cmd); 
+	printf("Process rcv: %d %s\n", pid, rcv);
 
+	
 	return 0;
 	
 }
