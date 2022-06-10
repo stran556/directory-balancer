@@ -125,10 +125,10 @@ int main(int argc, char* argv[]) {
 		//Pipe file list to other child
 		printf("Files in d2:%s", rcv);
 		char* snt2 = rcv;
-		if (write(p2[1], rcv, strlen(rcv)) < 0){ //write to pipe p2
+		if (write(p2[1], rcv, *rlen2) < 0){ //write to pipe p2
 			return 1;
 		}
-		if (read(p1[0], rcv, strlen(rcv)) < 0) { //read from pipe p1
+		if (read(p1[0], rcv, len2) < 0) { //read from pipe p1
 			return 1;
 		}
 		printf("Files in d1:%s", snt2);
@@ -212,14 +212,14 @@ int main(int argc, char* argv[]) {
 			return 1;
 		}
 		printf("Size of RCV %s: %d\n", directory, len);
-
+		
 		//Pipe file list to other child
 		printf("Files in d1:%s", rcv);
 		char* snt = rcv;
-		if (write(p1[1], rcv, strlen(rcv)) < 0){ //write to pipe p1
+		if (write(p1[1], rcv, *rlen) < 0){ //write to pipe p1
 			return 1;
 		}
-		if (read(p2[0], rcv, strlen(rcv)) < 0) { //read from pipe p2
+		if (read(p2[0], rcv, len) < 0) { //read from pipe p2
 			return 1;
 		}
 		printf("Files in d2:%s", snt);
