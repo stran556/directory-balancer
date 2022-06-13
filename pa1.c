@@ -202,6 +202,8 @@ int main(int argc, char* argv[]) {
 			}
 			found = false;
 		}
+		//erase contents of d2.txt, then add names of all empty files
+		system(": > d2.txt | find \"d2\" -size 0 | cut -c 4- >> d2.txt");
 		
 	}	
 	//==============================End Child 2 - Begin Child 1=====================================
@@ -343,7 +345,7 @@ int main(int argc, char* argv[]) {
 		bool found = false;
 			for(int i = 0; i < d2count; i++){
 				for(int j = 0; j < d1count; j++){
-					//If lengths do not match, neither can the files
+					//If lengths do not match, neither can the files (memcmp returns 0 for true, so flip)
 					if((strlen(d2array[i]) == strlen(d1array[j])) && !memcmp(d2array[i], d1array[j], strlen(d1array[i]))) {
 						found = true;
 					}
@@ -360,6 +362,10 @@ int main(int argc, char* argv[]) {
 				}
 				found = false;
 			}
+
+			//erase contents of d2.txt, then add names of all empty files
+			system(": > d1.txt | find \"d1\" -size 0 | cut -c 4- >> d1.txt");
+			
 	}
 	//===================================End Child 1===========================================
 	sleep(2);
