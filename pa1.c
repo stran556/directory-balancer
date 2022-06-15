@@ -209,6 +209,8 @@ int main(int argc, char* argv[]) {
 		//erase contents of d2.txt, then add names of all empty files
 		sprintf(missing_files, ": > %s.txt | find \"%s\" -size 0 | cut -c 4- >> %s.txt", directory, directory, directory);
 		system(missing_files);
+
+
 		sprintf(txt, "%s.txt", directory);
 		printf("Directory and file: %s, %s\n", directory, txt);	
 		if (write(p2[1], txt, 7) < 0){ //write to pipe p2
@@ -220,7 +222,7 @@ int main(int argc, char* argv[]) {
 		printf("Directory and file: %s, %s\n", directory, txt);	
 
 		FILE *fpipe4;
-		sprintf(command, "grep txt %s", main);
+		sprintf(command, "grep txt %s", txt);
 		char *filecnt4 = command;
 		char c4 = 0;
 
@@ -240,7 +242,7 @@ int main(int argc, char* argv[]) {
 			m2count++;
 			}
 		}
-		printf("M2: %s\n M2count: %d", m2, m2count);
+		printf("M2: %s\nM2count: %d\n", m2, m2count);
 
 		
 		int ff = 0;
@@ -251,8 +253,28 @@ int main(int argc, char* argv[]) {
 			m2array[ff++] = ss;
 			ss = strtok (NULL, "\n");
 		}
-		printf("Array test: %s %s %s", m2array[0], m2array[1], m2array[2]); //alpha, bravo, charlie
+		printf("Array test: %s %s %s\n", m2array[0], m2array[1], m2array[2]); //alpha, bravo, charlie
 
+		sprintf(command, ": > %s", txt);
+		system(command);
+
+		char appender[1000];
+		//Writing to d1.txt
+		for(int i = 0; i < m2count; i++){
+			sprintf(appender, "echo %s >> %s", m2array[i], txt);
+			system(appender);
+			sprintf(appender, "echo $(cat %s/%s) >> %s", directory, m2array[i], txt);
+			system(appender);
+		}
+		system("cat d1.txt");
+
+		if (write(p2[1], txt, 7) < 0){ //write to pipe p2
+			return 1;
+		}
+		if (read(p1[0], txt, 7) < 0) { //read from pipe p1
+			return 1;
+		}
+		printf("Directory and file: %s, %s\n", directory, txt);	
 		
 	}	
 	//==============================End Child 2 - Begin Child 1=====================================
@@ -428,7 +450,7 @@ int main(int argc, char* argv[]) {
 		printf("Directory and file: %s, %s\n", directory, txt);
 
 		FILE *fpipe3;
-		sprintf(command, "grep txt %s", main);
+		sprintf(command, "grep txt %s", txt);
 		char *filecnt3 = command;
 		char c3 = 0;
 
@@ -448,7 +470,7 @@ int main(int argc, char* argv[]) {
 			m1count++;
 			}
 		}
-		printf("M1: %s\n M1count: %d", m1, m1count);
+		printf("M1: %s\nM1count: %d\n", m1, m1count);
 
 		int ee = 0;
 		char *tt = strtok (m1, "\n");
@@ -458,10 +480,29 @@ int main(int argc, char* argv[]) {
 			m1array[ee++] = tt;
 			tt = strtok (NULL, "\n");
 		}
-		printf("Array test: %s %s %s", m1array[0], m1array[1], m1array[2]); //alpha, bravo, charlie
+		printf("Array test: %s %s %s\n", m1array[0], m1array[1], m1array[2]); 
 
 		//Clear txt file
-		sprintf();
+		sprintf(command, ": > %s", txt);
+		system(command); 
+
+		char appender[1000];
+		//Writing to d2.txt
+		for(int i = 0; i < m1count; i++){
+			sprintf(appender, "echo %s >> %s", m1array[i], txt);
+			system(appender);
+			sprintf(appender, "echo $(cat %s/%s) >> %s", directory, m1array[i], txt);
+			system(appender);
+		}
+		system("cat d2.txt");
+		
+		if (write(p1[1], txt, 7) < 0){ //write to pipe p1
+		return 1;
+		}
+		if (read(p2[0], txt, 7) < 0) { //read from pipe p2
+			return 1;
+		}
+		printf("Directory and file: %s, %s\n", directory, txt);
 		
 	}
 	//===================================End Child 1===========================================
