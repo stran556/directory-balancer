@@ -1,4 +1,0 @@
-crank.txt
-raven.txt
-spark.txt
-trash.txt
