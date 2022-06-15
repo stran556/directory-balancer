@@ -25,6 +25,8 @@ int main(int argc, char* argv[]) {
 	char main2[1000];
 	char snt[1000];
 	char missing_files[1000];
+	char m1[1000];
+	char m2[1000];
 	int len;
 
 	//Verify initial discrepancies between d1 and d2
@@ -217,6 +219,29 @@ int main(int argc, char* argv[]) {
 		}
 		printf("Directory and file: %s, %s\n", directory, txt);	
 
+		FILE *fpipe4;
+		sprintf(command, "grep txt %s", main);
+		char *filecnt4 = command;
+		char c4 = 0;
+
+		if (0 == (fpipe4 = (FILE*)popen(filecnt4, "r"))) {
+			exit(EXIT_FAILURE);
+		}
+
+		while (fread(&c4, sizeof c4, 1, fpipe4)) {
+			//printf("%c", c);
+			sprintf(m2, "%s%c", m2, c4);
+		}
+		pclose(fpipe4);
+
+		int l, m2count = 0;
+		for(l = 0; m2[l]; l++) {
+			if(m2[l] == '\n') {
+			m2count++;
+			}
+		}
+		printf("M2: %s\n M2count: %d", m2, m2count);
+
 		
 	}	
 	//==============================End Child 2 - Begin Child 1=====================================
@@ -390,6 +415,30 @@ int main(int argc, char* argv[]) {
 			return 1;
 		}
 		printf("Directory and file: %s, %s\n", directory, txt);
+
+		FILE *fpipe3;
+		sprintf(command, "grep txt %s", main);
+		char *filecnt3 = command;
+		char c3 = 0;
+
+		if (0 == (fpipe3 = (FILE*)popen(filecnt3, "r"))) {
+			exit(EXIT_FAILURE);
+		}
+
+		while (fread(&c3, sizeof c3, 1, fpipe3)) {
+			//printf("%c", c);
+			sprintf(m1, "%s%c", m1, c3);
+		}
+		pclose(fpipe3);
+	
+		int k, m1count = 0;
+		for(k = 0; m1[k]; k++) {
+			if(m1[k] == '\n') {
+			m1count++;
+			}
+		}
+		printf("M1: %s\n M1count: %d", m1, m1count);
+		
 	}
 	//===================================End Child 1===========================================
 	sleep(2);
