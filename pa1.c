@@ -24,6 +24,7 @@ int main(int argc, char* argv[]) {
 	char main1[1000];
 	char main2[1000];
 	char snt[1000];
+	char missing_files[1000];
 	int len;
 
 	//Verify initial discrepancies between d1 and d2
@@ -32,6 +33,7 @@ int main(int argc, char* argv[]) {
 	//Clear both files
 	system(": > d1.txt");
 	system(": > d2.txt");
+
 
 	int p1[2]; //main -> child
 	int p2[2]; // child -> main
@@ -203,7 +205,18 @@ int main(int argc, char* argv[]) {
 			found = false;
 		}
 		//erase contents of d2.txt, then add names of all empty files
-		system(": > d2.txt | find \"d2\" -size 0 | cut -c 4- >> d2.txt");
+		sprintf(missing_files, ": > %s.txt | find \"%s\" -size 0 | cut -c 4- >> %s.txt", directory, directory, directory);
+		system(missing_files);
+		sprintf(txt, "%s.txt", directory);
+		printf("Directory and file: %s, %s\n", directory, txt);	
+		if (write(p2[1], txt, 7) < 0){ //write to pipe p2
+			return 1;
+		}
+		if (read(p1[0], txt, 7) < 0) { //read from pipe p1
+			return 1;
+		}
+		printf("Directory and file: %s, %s\n", directory, txt);	
+
 		
 	}	
 	//==============================End Child 2 - Begin Child 1=====================================
@@ -363,9 +376,20 @@ int main(int argc, char* argv[]) {
 				found = false;
 			}
 
-			//erase contents of d2.txt, then add names of all empty files
-			system(": > d1.txt | find \"d1\" -size 0 | cut -c 4- >> d1.txt");
-			
+		//erase contents of d2.txt, then add names of all empty files
+		
+		sprintf(missing_files, ": > %s.txt | find \"%s\" -size 0 | cut -c 4- >> %s.txt", directory, directory, directory);
+		system(missing_files);
+		sprintf(txt, "%s.txt", directory);
+		printf("Directory and file: %s, %s\n", directory, txt);	
+		//Send list of files that need content to d2
+		if (write(p1[1], txt, 7) < 0){ //write to pipe p1
+		return 1;
+		}
+		if (read(p2[0], txt, 7) < 0) { //read from pipe p2
+			return 1;
+		}
+		printf("Directory and file: %s, %s\n", directory, txt);
 	}
 	//===================================End Child 1===========================================
 	sleep(2);
