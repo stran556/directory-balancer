@@ -1,6 +1,0 @@
-alpha.txt
-bravo.txt
-chart.txt
-mecha.txt
-queue.txt
-terra.txt
