@@ -243,6 +243,17 @@ int main(int argc, char* argv[]) {
 		printf("M2: %s\n M2count: %d", m2, m2count);
 
 		
+		int ff = 0;
+		char *ss = strtok (m2, "\n");
+		char *m2array[m2count];
+
+		while (ss != NULL) {
+			m2array[ff++] = ss;
+			ss = strtok (NULL, "\n");
+		}
+		printf("Array test: %s %s %s", m2array[0], m2array[1], m2array[2]); //alpha, bravo, charlie
+
+		
 	}	
 	//==============================End Child 2 - Begin Child 1=====================================
 	/*
@@ -438,6 +449,19 @@ int main(int argc, char* argv[]) {
 			}
 		}
 		printf("M1: %s\n M1count: %d", m1, m1count);
+
+		int ee = 0;
+		char *tt = strtok (m1, "\n");
+		char *m1array[m1count];
+
+		while (tt != NULL) {
+			m1array[ee++] = tt;
+			tt = strtok (NULL, "\n");
+		}
+		printf("Array test: %s %s %s", m1array[0], m1array[1], m1array[2]); //alpha, bravo, charlie
+
+		//Clear txt file
+		sprintf();
 		
 	}
 	//===================================End Child 1===========================================
