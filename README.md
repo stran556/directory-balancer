@@ -22,7 +22,8 @@ d2.txt - list of files in directory 2
 
 [X] Have each child create missing files using the list received from the other child
 
-[\_]Have each child send the contents of the files in its directory. The receiving child will populate files with received content.
+[X]Have each child send the contents of the files in its directory. The receiving child will populate files with received content.
 
+DONE!
 
 
