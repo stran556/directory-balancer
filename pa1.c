@@ -27,6 +27,8 @@ int main(int argc, char* argv[]) {
 	char missing_files[1000];
 	char m1[1000];
 	char m2[1000];
+	char mf1[1000];
+	char mf2[1000];
 	int len;
 
 	//Verify initial discrepancies between d1 and d2
@@ -275,6 +277,46 @@ int main(int argc, char* argv[]) {
 			return 1;
 		}
 		printf("Directory and file: %s, %s\n", directory, txt);	
+
+			FILE *fpipe6;
+		sprintf(command, "cat %s", txt);
+		char *filecnt6 = command;
+		char c6 = 0;
+
+		if (0 == (fpipe6 = (FILE*)popen(filecnt6, "r"))) {
+			exit(EXIT_FAILURE);
+		}
+
+		while (fread(&c6, sizeof c6, 1, fpipe6)) {
+			//printf("%c", c);
+			sprintf(mf2, "%s%c", mf2, c6);
+		}
+		pclose(fpipe6);
+
+		int ll, mf2count = 0;
+		for(ll = 0; mf2[ll]; ll++) {
+			if(mf2[ll] == '\n') {
+			mf2count++;
+			}
+		}
+		printf("MF2: %s\nMF2count: %d\n", mf2, mf2count); 
+
+		int fff = 0;
+		char *sss = strtok (mf2, "\n");
+		char *mf2array[mf2count];
+
+		while (sss != NULL) {
+			mf2array[fff++] = sss;
+			sss = strtok (NULL, "\n");
+		}
+		
+		char updater[1000];
+		for(int i = 0; i < mf2count; i = i + 2){
+			sprintf(updater, "printf %s > %s/%s", mf2array[i + 1], directory, mf2array[i]);
+			system(updater);
+		}
+		
+		system("cat d2.txt");
 		
 	}	
 	//==============================End Child 2 - Begin Child 1=====================================
@@ -504,6 +546,47 @@ int main(int argc, char* argv[]) {
 		}
 		printf("Directory and file: %s, %s\n", directory, txt);
 		
+		FILE *fpipe5;
+		sprintf(command, "cat %s", txt);
+		char *filecnt5 = command;
+		char c5 = 0;
+
+		if (0 == (fpipe5 = (FILE*)popen(filecnt5, "r"))) {
+			exit(EXIT_FAILURE);
+		}
+
+		while (fread(&c5, sizeof c5, 1, fpipe5)) {
+			//printf("%c", c);
+			sprintf(mf1, "%s%c", mf1, c5);
+		}
+		pclose(fpipe5);
+
+		int kk, mf1count = 0;
+		for(kk = 0; mf1[kk]; kk++) {
+			if(mf1[kk] == '\n') {
+			mf1count++;
+			}
+		}
+		printf("MF1: %s\nMF1count: %d\n", mf1, mf1count);
+
+		int eee = 0;
+		char *ttt = strtok (mf1, "\n");
+		char *mf1array[mf1count];
+
+		while (ttt != NULL) {
+			mf1array[eee++] = ttt;
+			ttt = strtok (NULL, "\n");
+		}
+
+		char updater[1000];
+		for(int i = 0; i < mf1count; i = i + 2){
+			sprintf(updater, "printf %s > %s/%s", mf1array[i + 1], directory, mf1array[i]);
+			system(updater);
+			sprintf(updater, "tr -d '\n' < %s/%s", directory, mf1array[i]);
+			system(updater);
+		}
+		
+		system("cat d1.txt");
 	}
 	//===================================End Child 1===========================================
 	sleep(2);
