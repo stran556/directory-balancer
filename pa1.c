@@ -27,6 +27,8 @@ int main(int argc, char* argv[]) {
 	char m2[1000];
 	char mf1[1000];
 	char mf2[1000];
+
+	//Error handling
 	int errno;
 
 	//Verify initial discrepancies between d1 and d2
@@ -47,12 +49,10 @@ int main(int argc, char* argv[]) {
 		printf("Error.");
 		return 1;
 	}
+	//Create pipes and confirm successful pipe initialization
+	int p1[2]; 
+	int p2[2]; 
 
-
-	int p1[2]; //main -> child
-	int p2[2]; // child -> main
-
-	//Confirm successful pipe initialization
 	if (pipe(p1) == -1) {
 		printf("Error.");
 		return 1;
@@ -88,10 +88,14 @@ int main(int argc, char* argv[]) {
 		sprintf(main, "%s.txt", directory);
 		sprintf(txt, "%s.txt", directory);
 		sprintf(command, "ls %s >> %s.txt", directory, directory);
-		system(command); 
-		
+		errno = system(command); 
+		if(errno == -1) { 
+			printf("Error.");
+			return 1;
+		}
+
 		//Child sends list to other child
-		if (write(p2[1], txt, 7) < 0){ //write to pipe p2
+		if (write(p2[1], txt, 7) < 0) { //write to pipe p2
 			return 1;
 		}
 		if (read(p1[0], txt, 7) < 0) { //read from pipe p1
@@ -110,7 +114,6 @@ int main(int argc, char* argv[]) {
 		}
 
 		while (fread(&c, sizeof c, 1, fpipe)) {
-			//printf("%c", c);
 			sprintf(snt, "%s%c", snt, c);
 			
 		}
@@ -188,13 +191,21 @@ int main(int argc, char* argv[]) {
 			//If no match is found, file will be created in child's corresponding directory
 			if(!found){
 				sprintf(addfile, "touch %s/%s", directory, d1array[i]);
-				system(addfile);
+				errno = system(addfile);
+				if(errno == -1) { 
+					printf("Error.");
+					return 1;
+				}
 			}
 			found = false;
 		}
 		//erase contents of file, then add names of all empty files and send file to other child
 		sprintf(missing_files, ": > %s.txt | find \"%s\" -size 0 | cut -c 4- >> %s.txt", directory, directory, directory);
-		system(missing_files);
+		errno = system(missing_files);
+		if(errno == -1) { 
+			printf("Error.");
+			return 1;
+		}
 		sprintf(txt, "%s.txt", directory);
 		
 		if (write(p2[1], txt, 7) < 0){
@@ -238,13 +249,26 @@ int main(int argc, char* argv[]) {
 		
 		//Rewrite file with file names and contents of files, then send to other child
 		sprintf(command, ": > %s", txt);
-		system(command);
+		errno = system(command);
+		if(errno == -1) { 
+			printf("Error.");
+			return 1;
+		}
+
 		char appender[1000];
 		for(int i = 0; i < m2count; i++){
 			sprintf(appender, "echo %s >> %s", m2array[i], txt);
-			system(appender);
+			errno = system(appender);
+			if(errno == -1) { 
+				printf("Error.");
+				return 1;
+			}
 			sprintf(appender, "echo $(cat %s/%s) >> %s", directory, m2array[i], txt);
-			system(appender);
+			errno = system(appender);
+			if(errno == -1) { 
+				printf("Error.");
+				return 1;
+			}
 		}
 		if (write(p2[1], txt, 7) < 0){ //write to pipe p2
 			return 1;
@@ -289,7 +313,11 @@ int main(int argc, char* argv[]) {
 		char updater[1000];
 		for(int i = 0; i < mf2count; i = i + 2){
 			sprintf(updater, "printf %s > %s/%s", mf2array[i + 1], directory, mf2array[i]);
-			system(updater);
+			errno = system(updater);
+			if(errno == -1) { 
+				printf("Error.");
+				return 1;
+			}	
 		}
 		
 	}	
@@ -315,7 +343,11 @@ int main(int argc, char* argv[]) {
 		sprintf(main, "%s.txt", directory);
 		sprintf(txt, "%s.txt", directory);
 		sprintf(command, "ls %s >> %s", directory, txt);
-		system(command); 
+		errno = system(command); 
+		if(errno == -1) { 
+			printf("Error.");
+			return 1;
+		}
 		
 		//Child sends list to other child
 		if (write(p1[1], txt, 7) < 0){ //write to pipe p1
@@ -336,7 +368,6 @@ int main(int argc, char* argv[]) {
 		}
 
 		while (fread(&c2, sizeof c2, 1, fpipe2)) {
-			//printf("%c", c);
 			sprintf(snt, "%s%c", snt, c2);
 		}
 		pclose(fpipe2);
@@ -411,14 +442,22 @@ int main(int argc, char* argv[]) {
 				//If no match is found, file will be created in child's corresponding directory
 				if(!found) {
 					sprintf(addfile, "touch %s/%s", directory, d2array[i]);
-					system(addfile);
+					errno = system(addfile);
+					if(errno == -1) { 
+						printf("Error.");
+						return 1;
+					}
 				}
 				found = false;
 			}
 
 		//erase contents of file, then add names of all empty files and send file to other child
 		sprintf(missing_files, ": > %s.txt | find \"%s\" -size 0 | cut -c 4- >> %s.txt", directory, directory, directory);
-		system(missing_files);
+		errno = system(missing_files);
+		if(errno == -1) { 
+			printf("Error.");
+			return 1;
+		}
 		sprintf(txt, "%s.txt", directory);
 		if (write(p1[1], txt, 7) < 0){ 
 		return 1;
@@ -466,9 +505,17 @@ int main(int argc, char* argv[]) {
 		char appender[1000];
 		for(int i = 0; i < m1count; i++){
 			sprintf(appender, "echo %s >> %s", m1array[i], txt);
-			system(appender);
+			errno = system(appender);
+			if(errno == -1) { 
+				printf("Error.");
+				return 1;
+			}
 			sprintf(appender, "echo $(cat %s/%s) >> %s", directory, m1array[i], txt);
-			system(appender);
+			errno = system(appender);
+			if(errno == -1) { 
+				printf("Error.");
+				return 1;
+			}
 		}
 	
 		if (write(p1[1], txt, 7) < 0){ 
@@ -514,7 +561,11 @@ int main(int argc, char* argv[]) {
 		char updater[1000];
 		for(int i = 0; i < mf1count; i = i + 2){
 			sprintf(updater, "printf %s > %s/%s", mf1array[i + 1], directory, mf1array[i]);
-			system(updater);
+			errno = system(updater);
+			if(errno == -1) { 
+				printf("Error.");
+				return 1;
+			}
 		}
 	
 	}
