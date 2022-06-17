@@ -21,24 +21,34 @@ int main(int argc, char* argv[]) {
 
 	char txt[1000];
 	char command[1000];
-	char main1[1000];
-	char main2[1000];
 	char snt[1000];
 	char missing_files[1000];
 	char m1[1000];
 	char m2[1000];
 	char mf1[1000];
 	char mf2[1000];
-	int len;
+	int errno;
 
 	//Verify initial discrepancies between d1 and d2
-	system("diff d1 d2");
+	errno = system("diff d1 d2");
+	if(errno == -1){
+		printf("Error.");
+		return 1;
+	}
 
 	//Clear both files
-	system(": > d1.txt");
-	system(": > d2.txt");
+	errno = system(": > d1.txt");
+	if(errno == -1){
+		printf("Error.");
+		return 1;
+	}
+	errno = system(": > d2.txt");
+	if(errno == -1){
+		printf("Error.");
+		return 1;
+	}
 
-	
+
 	int p1[2]; //main -> child
 	int p2[2]; // child -> main
 
@@ -70,19 +80,16 @@ int main(int argc, char* argv[]) {
 	 - Child 2 retrieves contents for list of files and sends to child 1 via pipe, receiving contents in return.
 	*/
 
+	//Child AKA child 2
 	if (pid == 0) {
+		//Assign child 2 to directory 2, then add file names to list and print
 		char* directory = "d2"; 
-
-		//assign d2.txt to process
-		sprintf(main2, "%s.txt", directory);
-		char* main = main2;
-
-		//add file names to list and print
+		char main[1000];
+		sprintf(main, "%s.txt", directory);
 		sprintf(txt, "%s.txt", directory);
 		sprintf(command, "ls %s >> %s.txt", directory, directory);
 		system(command); 
 		
-
 		//Child sends list to other child
 		if (write(p2[1], txt, 7) < 0){ //write to pipe p2
 			return 1;
@@ -91,9 +98,8 @@ int main(int argc, char* argv[]) {
 			return 1;
 		}
 
-		
-
-		//Retrieve d2 file as variable
+	
+		//Translate contents into variable for parsing
 		FILE *fpipe;
 		sprintf(command, "cat %s", main);
 		char *filecnt = command;
@@ -108,35 +114,31 @@ int main(int argc, char* argv[]) {
 			sprintf(snt, "%s%c", snt, c);
 			
 		}
-		
+		pclose(fpipe);
+
+		//Getting length of contents to send to other child, then sending lengths
 		int len2 = strlen(snt);
 		int *rlen2 = malloc(sizeof *rlen2);
 		*rlen2 = len2;
 
-		if (write(p2[1], &len2, sizeof(len2)) < 0){ //write to pipe p2
+		if (write(p2[1], &len2, sizeof(len2)) < 0){ 
 			return 1;
 		}
-		if (read(p1[0], &len2, sizeof(len2)) < 0) { //read from pipe p1
+		if (read(p1[0], &len2, sizeof(len2)) < 0) { 
 			return 1;
 		}
 
 		char rcv[len2 + 1];
 
-		//Pipe file list to other child
-	
-		if (write(p2[1], snt, *rlen2 + 1) < 0){ //write to pipe p2
+		//Pipe file list to other child using received lengths
+		if (write(p2[1], snt, *rlen2 + 1) < 0){
 			return 1;
 		}
-		if (read(p1[0], rcv, len2 + 1) < 0) { //read from pipe p1
+		if (read(p1[0], rcv, len2 + 1) < 0) {
 			return 1;
 		}
-		//printf("Files in %s:%s", main, s);
-		pclose(fpipe);
-		//exit(EXIT_SUCCESS);	
 
-		//SNT IS D2, RCV IS D1
-
-		//Retrieve number of files in list
+		//Retrieve number of files in sent(snt) list and received(rcv) list
 		int i, d2count = 0;
 		for(i = 0; snt[i]; i++) {
 			if(snt[i] == '\n')
@@ -151,7 +153,7 @@ int main(int argc, char* argv[]) {
 			}
 		}
 
-		//Separating SNT and RCV files into an array
+		//Separating SNT and RCV files into an array to parse each file name separately
 		int f = 0;
 		char *s = strtok (snt, "\n");
 		char *d2array[d2count];
@@ -178,36 +180,33 @@ int main(int argc, char* argv[]) {
 				if((strlen(d1array[i]) == strlen(d2array[j])) && !memcmp(d1array[i], d2array[j], strlen(d1array[i]))) {
 					found = true;
 				}
-				//printf("%s and %s: ", d1array[i], d2array[j]);
-				//printf("%d\n", found);
+				//If match is found between both directories, no action
 				if(found){
 					break;
 				}
 			}
+			//If no match is found, file will be created in child's corresponding directory
 			if(!found){
 				sprintf(addfile, "touch %s/%s", directory, d1array[i]);
 				system(addfile);
-				//printf("Adding: %s\n", addfile);
 			}
 			found = false;
 		}
-		//erase contents of d2.txt, then add names of all empty files
+		//erase contents of file, then add names of all empty files and send file to other child
 		sprintf(missing_files, ": > %s.txt | find \"%s\" -size 0 | cut -c 4- >> %s.txt", directory, directory, directory);
 		system(missing_files);
-
-
 		sprintf(txt, "%s.txt", directory);
 		
-		if (write(p2[1], txt, 7) < 0){ //write to pipe p2
+		if (write(p2[1], txt, 7) < 0){
 			return 1;
 		}
-		if (read(p1[0], txt, 7) < 0) { //read from pipe p1
+		if (read(p1[0], txt, 7) < 0) {
 			return 1;
 		}
 		
-
+		//Translate file of names of empty files to variable for parsing
 		FILE *fpipe4;
-		sprintf(command, "grep txt %s", txt);
+		sprintf(command, "cat %s", txt);
 		char *filecnt4 = command;
 		char c4 = 0;
 
@@ -216,11 +215,11 @@ int main(int argc, char* argv[]) {
 		}
 
 		while (fread(&c4, sizeof c4, 1, fpipe4)) {
-			//printf("%c", c);
 			sprintf(m2, "%s%c", m2, c4);
 		}
 		pclose(fpipe4);
 
+		//Count number of file names in file
 		int l, m2count = 0;
 		for(l = 0; m2[l]; l++) {
 			if(m2[l] == '\n') {
@@ -228,27 +227,25 @@ int main(int argc, char* argv[]) {
 			}
 		}
 		
+		//Separate file names into an array
 		int ff = 0;
 		char *ss = strtok (m2, "\n");
 		char *m2array[m2count];
-
 		while (ss != NULL) {
 			m2array[ff++] = ss;
 			ss = strtok (NULL, "\n");
 		}
-
+		
+		//Rewrite file with file names and contents of files, then send to other child
 		sprintf(command, ": > %s", txt);
 		system(command);
-
 		char appender[1000];
-		//Writing to d1.txt
 		for(int i = 0; i < m2count; i++){
 			sprintf(appender, "echo %s >> %s", m2array[i], txt);
 			system(appender);
 			sprintf(appender, "echo $(cat %s/%s) >> %s", directory, m2array[i], txt);
 			system(appender);
 		}
-
 		if (write(p2[1], txt, 7) < 0){ //write to pipe p2
 			return 1;
 		}
@@ -256,7 +253,8 @@ int main(int argc, char* argv[]) {
 			return 1;
 		}
 	
-			FILE *fpipe6;
+		//Translate file of file names and contents to variable for parsing
+		FILE *fpipe6;
 		sprintf(command, "cat %s", txt);
 		char *filecnt6 = command;
 		char c6 = 0;
@@ -266,11 +264,11 @@ int main(int argc, char* argv[]) {
 		}
 
 		while (fread(&c6, sizeof c6, 1, fpipe6)) {
-			//printf("%c", c);
 			sprintf(mf2, "%s%c", mf2, c6);
 		}
 		pclose(fpipe6);
 
+		//Count number of entities in file and separate file names and contents into an array
 		int ll, mf2count = 0;
 		for(ll = 0; mf2[ll]; ll++) {
 			if(mf2[ll] == '\n') {
@@ -278,7 +276,6 @@ int main(int argc, char* argv[]) {
 			}
 		}
 		
-
 		int fff = 0;
 		char *sss = strtok (mf2, "\n");
 		char *mf2array[mf2count];
@@ -288,6 +285,7 @@ int main(int argc, char* argv[]) {
 			sss = strtok (NULL, "\n");
 		}
 		
+		//Fill empty files with received contents
 		char updater[1000];
 		for(int i = 0; i < mf2count; i = i + 2){
 			sprintf(updater, "printf %s > %s/%s", mf2array[i + 1], directory, mf2array[i]);
@@ -295,7 +293,7 @@ int main(int argc, char* argv[]) {
 		}
 		
 	}	
-	//==============================End Child 2 - Begin Child 1=====================================
+	//==============================End Child 2 - Begin Child 1=====================================//
 	
 	/*
 	 - Begin by assigning directory 1 to child 1
@@ -311,14 +309,10 @@ int main(int argc, char* argv[]) {
 
 	//main AKA child 1
 	else {
-		//assign main process to directory 1
+		//assign main process to directory 1 and add file names to list and print
 		char* directory = "d1"; 
-
-		//assign d1.txt to process
-		sprintf(main1, "%s.txt", directory);
-		char* main = main1;
-
-		//add file names to list and print
+		char main[1000];
+		sprintf(main, "%s.txt", directory);
 		sprintf(txt, "%s.txt", directory);
 		sprintf(command, "ls %s >> %s", directory, txt);
 		system(command); 
@@ -331,8 +325,7 @@ int main(int argc, char* argv[]) {
 			return 1;
 		}
 
-
-		//Retrieve d1 file as variable
+		//Translate contents into variable for parsing
 		FILE *fpipe2;
 		sprintf(command, "grep txt %s", main);
 		char *filecnt2 = command;
@@ -348,32 +341,28 @@ int main(int argc, char* argv[]) {
 		}
 		pclose(fpipe2);
 
+		//Getting length of contents to send to other child, then sending lengths
 		int len = strlen(snt);
 		int *rlen = malloc(sizeof *rlen);
 		*rlen = len;
-
-		//Pipe file size to other child (JUST SWAPS FILE SIZES FOR USE)
-		if (write(p1[1], &len, sizeof(len)) < 0){ //write to pipe p1
+		if (write(p1[1], &len, sizeof(len)) < 0){
 			return 1;
 		}
-		if (read(p2[0], &len, sizeof(len)) < 0) { //read from pipe p2
+		if (read(p2[0], &len, sizeof(len)) < 0) {
 			return 1;
 		}
 
 		char rcv[len];
-		//Pipe file list to other child
-		if (write(p1[1], snt, *rlen + 1) < 0){ //write to pipe p1
+
+		//Pipe file list to other child using received lengths
+		if (write(p1[1], snt, *rlen + 1) < 0){
 			return 1;
 		}
-		if (read(p2[0], rcv, len + 1) < 0) { //read from pipe p2
+		if (read(p2[0], rcv, len + 1) < 0) {
 			return 1;
 		}
 		
-		//exit(EXIT_SUCCESS);
-		
-		//SNT IS D1, RCV IS D2
-		
-		//Retrieve number of files in list
+		//Retrieve number of files in sent(snt) list and received(rcv) list
 		int j, d1count = 0;
 		for(j = 0; snt[j]; j++) {
 			if(snt[j] == '\n') {
@@ -387,7 +376,7 @@ int main(int argc, char* argv[]) {
 			}
 		}
 
-		//Separating SNT and RCV files into an array
+		//Separating SNT and RCV files into an array to parse each file name separately
 		int c = 0;
 		char *s = strtok (snt, "\n");
 		char *d1array[d1count];
@@ -405,41 +394,40 @@ int main(int argc, char* argv[]) {
 			t = strtok (NULL, "\n");
 		}
 
+		//Creating missing files in directory 1
 		char addfile[1000];
 		bool found = false;
 			for(int i = 0; i < d2count; i++){
 				for(int j = 0; j < d1count; j++){
-					//If lengths do not match, neither can the files (memcmp returns 0 for true, so flip)
+					//If lengths do not match, neither can the files
 					if((strlen(d2array[i]) == strlen(d1array[j])) && !memcmp(d2array[i], d1array[j], strlen(d1array[i]))) {
 						found = true;
 					}
-					//printf("%s and %s: ", d2array[i], d1array[j]);
-					//printf("%d\n", found);
+					//If match is found between both directories, no action
 					if(found) {
 						break;
 					}
 				}
+				//If no match is found, file will be created in child's corresponding directory
 				if(!found) {
 					sprintf(addfile, "touch %s/%s", directory, d2array[i]);
 					system(addfile);
-					//printf("Adding: %s\n", addfile);
 				}
 				found = false;
 			}
 
-		//erase contents of d2.txt, then add names of all empty files
-		
+		//erase contents of file, then add names of all empty files and send file to other child
 		sprintf(missing_files, ": > %s.txt | find \"%s\" -size 0 | cut -c 4- >> %s.txt", directory, directory, directory);
 		system(missing_files);
 		sprintf(txt, "%s.txt", directory);
-		//Send list of files that need content to d2
-		if (write(p1[1], txt, 7) < 0){ //write to pipe p1
+		if (write(p1[1], txt, 7) < 0){ 
 		return 1;
 		}
-		if (read(p2[0], txt, 7) < 0) { //read from pipe p2
+		if (read(p2[0], txt, 7) < 0) { 
 			return 1;
 		}
 
+		//Translate file of names of empty files to variable for parsing
 		FILE *fpipe3;
 		sprintf(command, "grep txt %s", txt);
 		char *filecnt3 = command;
@@ -450,11 +438,11 @@ int main(int argc, char* argv[]) {
 		}
 
 		while (fread(&c3, sizeof c3, 1, fpipe3)) {
-			//printf("%c", c);
 			sprintf(m1, "%s%c", m1, c3);
 		}
 		pclose(fpipe3);
 	
+		//Count number of file names in file
 		int k, m1count = 0;
 		for(k = 0; m1[k]; k++) {
 			if(m1[k] == '\n') {
@@ -462,6 +450,7 @@ int main(int argc, char* argv[]) {
 			}
 		}
 
+		//Separate file names into an array
 		int ee = 0;
 		char *tt = strtok (m1, "\n");
 		char *m1array[m1count];
@@ -471,27 +460,25 @@ int main(int argc, char* argv[]) {
 			tt = strtok (NULL, "\n");
 		}
 
-		//Clear txt file
+		//Rewrite file with file names and contents of files, then send to other child
 		sprintf(command, ": > %s", txt);
 		system(command); 
-
 		char appender[1000];
-		//Writing to d2.txt
 		for(int i = 0; i < m1count; i++){
 			sprintf(appender, "echo %s >> %s", m1array[i], txt);
 			system(appender);
 			sprintf(appender, "echo $(cat %s/%s) >> %s", directory, m1array[i], txt);
 			system(appender);
 		}
-
-		
-		if (write(p1[1], txt, 7) < 0){ //write to pipe p1
+	
+		if (write(p1[1], txt, 7) < 0){ 
 		return 1;
 		}
-		if (read(p2[0], txt, 7) < 0) { //read from pipe p2
+		if (read(p2[0], txt, 7) < 0) { 
 			return 1;
 		}
 		
+		//Translate file of file names and contents to variable for parsing
 		FILE *fpipe5;
 		sprintf(command, "cat %s", txt);
 		char *filecnt5 = command;
@@ -502,11 +489,11 @@ int main(int argc, char* argv[]) {
 		}
 
 		while (fread(&c5, sizeof c5, 1, fpipe5)) {
-			//printf("%c", c);
 			sprintf(mf1, "%s%c", mf1, c5);
 		}
 		pclose(fpipe5);
 
+		//Count number of entities in file and separate file names and contents into an array
 		int kk, mf1count = 0;
 		for(kk = 0; mf1[kk]; kk++) {
 			if(mf1[kk] == '\n') {
@@ -523,6 +510,7 @@ int main(int argc, char* argv[]) {
 			ttt = strtok (NULL, "\n");
 		}
 
+		//Fill empty files with received contents
 		char updater[1000];
 		for(int i = 0; i < mf1count; i = i + 2){
 			sprintf(updater, "printf %s > %s/%s", mf1array[i + 1], directory, mf1array[i]);
@@ -530,7 +518,7 @@ int main(int argc, char* argv[]) {
 		}
 	
 	}
-	//===================================End Child 1===========================================
+	//===================================End Child 1===========================================//
 	if(pid != 0){
 		printf("\n\n");
 		sleep(1);
