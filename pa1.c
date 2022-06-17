@@ -21,18 +21,12 @@ int main(int argc, char* argv[]) {
 
 	char txt[1000];
 	char command[1000];
-	char snt[1000];
-	char missing_files[1000];
-	char m1[1000];
-	char m2[1000];
-	char mf1[1000];
-	char mf2[1000];
-
-	//Error handling
+	
+	//Error checking value for system calls
 	int errno;
 
 	//Verify initial discrepancies between d1 and d2
-	errno = system("diff d1 d2");
+	errno = system("ls d1 d2");
 	if(errno == -1){
 		printf("Error.");
 		return 1;
@@ -82,6 +76,7 @@ int main(int argc, char* argv[]) {
 
 	//Child AKA child 2
 	if (pid == 0) {
+		printf("\n\nBeginning transfer...\n");
 		//Assign child 2 to directory 2, then add file names to list and print
 		char* directory = "d2"; 
 		char main[1000];
@@ -104,6 +99,7 @@ int main(int argc, char* argv[]) {
 
 	
 		//Translate contents into variable for parsing
+		char snt[1000];
 		FILE *fpipe;
 		sprintf(command, "cat %s", main);
 		char *filecnt = command;
@@ -200,6 +196,7 @@ int main(int argc, char* argv[]) {
 			found = false;
 		}
 		//erase contents of file, then add names of all empty files and send file to other child
+		char missing_files[1000];
 		sprintf(missing_files, ": > %s.txt | find \"%s\" -size 0 | cut -c 4- >> %s.txt", directory, directory, directory);
 		errno = system(missing_files);
 		if(errno == -1) { 
@@ -216,6 +213,9 @@ int main(int argc, char* argv[]) {
 		}
 		
 		//Translate file of names of empty files to variable for parsing
+		char m2[1000];
+		char mf2[1000];
+
 		FILE *fpipe4;
 		sprintf(command, "cat %s", txt);
 		char *filecnt4 = command;
@@ -358,11 +358,11 @@ int main(int argc, char* argv[]) {
 		}
 
 		//Translate contents into variable for parsing
+		char snt[1000];
 		FILE *fpipe2;
 		sprintf(command, "grep txt %s", main);
 		char *filecnt2 = command;
 		char c2 = 0;
-
 		if (0 == (fpipe2 = (FILE*)popen(filecnt2, "r"))) {
 			exit(EXIT_FAILURE);
 		}
@@ -452,6 +452,7 @@ int main(int argc, char* argv[]) {
 			}
 
 		//erase contents of file, then add names of all empty files and send file to other child
+		char missing_files[1000];
 		sprintf(missing_files, ": > %s.txt | find \"%s\" -size 0 | cut -c 4- >> %s.txt", directory, directory, directory);
 		errno = system(missing_files);
 		if(errno == -1) { 
@@ -467,6 +468,8 @@ int main(int argc, char* argv[]) {
 		}
 
 		//Translate file of names of empty files to variable for parsing
+		char m1[1000];
+		char mf1[1000];
 		FILE *fpipe3;
 		sprintf(command, "grep txt %s", txt);
 		char *filecnt3 = command;
@@ -570,10 +573,15 @@ int main(int argc, char* argv[]) {
 	
 	}
 	//===================================End Child 1===========================================//
+	
 	if(pid != 0){
 		printf("\n\n");
 		sleep(1);
-		system("ls d1 d2");
+		errno = system("ls d1 d2");
+		if(errno == -1) { 
+			printf("Error.");
+			return 1;
+		}
 		printf("\n\nTransfer complete.");
 		
 	}
