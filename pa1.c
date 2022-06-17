@@ -11,7 +11,7 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <stdbool.h>
-
+#include <errno.h>
 
 /*
  - Program begins by clearing file names from lists and building pipes. 
@@ -38,7 +38,7 @@ int main(int argc, char* argv[]) {
 	system(": > d1.txt");
 	system(": > d2.txt");
 
-
+	
 	int p1[2]; //main -> child
 	int p2[2]; // child -> main
 
