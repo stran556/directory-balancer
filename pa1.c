@@ -105,7 +105,7 @@ int main(int argc, char* argv[]) {
 		char *filecnt = command;
 		char c = 0;
 
-		if (0 == (fpipe = (FILE*)popen(filecnt, "r"))) {
+		if ((fpipe = (FILE*)popen(filecnt, "r")) == 0) {
 			exit(EXIT_FAILURE);
 		}
 
@@ -221,7 +221,7 @@ int main(int argc, char* argv[]) {
 		char *filecnt4 = command;
 		char c4 = 0;
 
-		if (0 == (fpipe4 = (FILE*)popen(filecnt4, "r"))) {
+		if ((fpipe4 = (FILE*)popen(filecnt4, "r")) == 0) {
 			exit(EXIT_FAILURE);
 		}
 
@@ -283,7 +283,7 @@ int main(int argc, char* argv[]) {
 		char *filecnt6 = command;
 		char c6 = 0;
 
-		if (0 == (fpipe6 = (FILE*)popen(filecnt6, "r"))) {
+		if ((fpipe6 = (FILE*)popen(filecnt6, "r")) == 0) {
 			exit(EXIT_FAILURE);
 		}
 
@@ -363,7 +363,7 @@ int main(int argc, char* argv[]) {
 		sprintf(command, "grep txt %s", main);
 		char *filecnt2 = command;
 		char c2 = 0;
-		if (0 == (fpipe2 = (FILE*)popen(filecnt2, "r"))) {
+		if ((fpipe2 = (FILE*)popen(filecnt2, "r")) == 0) {
 			exit(EXIT_FAILURE);
 		}
 
@@ -475,7 +475,7 @@ int main(int argc, char* argv[]) {
 		char *filecnt3 = command;
 		char c3 = 0;
 
-		if (0 == (fpipe3 = (FILE*)popen(filecnt3, "r"))) {
+		if ((fpipe3 = (FILE*)popen(filecnt3, "r")) == 0) {
 			exit(EXIT_FAILURE);
 		}
 
@@ -534,7 +534,7 @@ int main(int argc, char* argv[]) {
 		char *filecnt5 = command;
 		char c5 = 0;
 
-		if (0 == (fpipe5 = (FILE*)popen(filecnt5, "r"))) {
+		if ((fpipe5 = (FILE*)popen(filecnt5, "r")) == 0) {
 			exit(EXIT_FAILURE);
 		}
 
